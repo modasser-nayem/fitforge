@@ -18,10 +18,6 @@ router.post(
 router.get("/", authorize("TRAINEE"), bookingController.getBookings);
 
 // Cancel booking
-router.delete(
-  "/:id/cancel",
-  authorize("TRAINEE"),
-  bookingController.cancelBooking,
-);
+router.delete("/:id", authorize("TRAINEE"), bookingController.cancelBooking);
 
 export const bookingRoutes = router;
