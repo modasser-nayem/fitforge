@@ -21,7 +21,7 @@ export const globalErrorHandler: ErrorRequestHandler = (
   if (err instanceof ZodError) {
     const result = zodErrorHandler(err);
     statusCode = result.statusCode;
-    message = result.message;
+    message = "Validation error occurred";
     error = result.error;
   } else if (err instanceof JsonWebTokenError) {
     statusCode = 401;
@@ -50,8 +50,17 @@ export const globalErrorHandler: ErrorRequestHandler = (
     error = err;
   } else if (err instanceof AppError) {
     statusCode = err.statusCode;
-    message = err.message;
-    error = null;
+
+    if (statusCode === 401) {
+      message = "Unauthorized Access";
+      error = err.message;
+    } else if (statusCode === 403) {
+      message = "Forbidden Access";
+      error = err.message;
+    } else {
+      message = err.message;
+      error = null;
+    }
   } else if (err instanceof Error) {
     if (err.message) {
       message = err.message;

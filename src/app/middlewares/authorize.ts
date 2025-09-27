@@ -16,7 +16,7 @@ export const authorize = (...roles: TUserRole[]) => {
       if (roles.length && !roles.includes(decoded.role)) {
         throw new AppError(
           403,
-          `You must be an ${decoded.role.toLowerCase()} to perform this action.`,
+          `You must be an ${roles.length === 2 ? `${roles[0]} or ${roles[1]}` : roles[0]} to perform this action.`,
         );
       }
 

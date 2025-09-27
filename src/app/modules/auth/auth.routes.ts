@@ -8,7 +8,7 @@ const router = Router();
 
 // Create Admin - Admin
 router.post(
-  "/admin",
+  "/register/admin",
   authorize("ADMIN"),
   requestValidate(authValidationSchema.createAccount),
   authController.createAdmin,
@@ -16,7 +16,7 @@ router.post(
 
 // Create Trainer - Admin
 router.post(
-  "/trainer",
+  "/register/trainer",
   authorize("ADMIN"),
   requestValidate(authValidationSchema.createAccount),
   authController.createTrainer,
@@ -24,7 +24,7 @@ router.post(
 
 // Register Trainee
 router.post(
-  "/trainee",
+  "/register/trainee",
   requestValidate(authValidationSchema.createAccount),
   authController.createTrainee,
 );
@@ -32,7 +32,7 @@ router.post(
 // Login
 router.post(
   "/login",
-  requestValidate(authValidationSchema.createAccount),
+  requestValidate(authValidationSchema.login),
   authController.login,
 );
 
