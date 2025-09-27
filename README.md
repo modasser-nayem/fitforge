@@ -9,8 +9,7 @@ Admins can create and manage trainers, schedule classes (max 5 per day), and ass
 
 ## 🌐 Live Demo
 
-- **Backend API**: [https://fitforge-server.com](https://fitforge-server.onrender.com)
-- **GitHub Repository**: [https://github.com/modasser-nayem/fitforge](https://github.com/modasser-nayem/fitforge)
+- **Backend API**: [https://fitforge-server-v9rr.onrender.com](https://fitforge-server-v9rr.onrender.com)
 
 ---
 
@@ -36,8 +35,8 @@ Admins can create and manage trainers, schedule classes (max 5 per day), and ass
 
 ## 📄 Documentation
 
-- **[📬 API Endpoints Documentation (Postman)](https://documenter.getpostman.com/view/xxxxxx)**
-- **[🗂️ Relational Diagram](https://drive.google.com/file/d/RELATIONAL_DIAGRAM_LINK/view?usp=sharing)**
+- **[📬 API Endpoints Documentation](https://documenter.getpostman.com/view/22696421/2sB3QDvsQJ)**
+- **[🗂️ Relational Diagram](https://drive.google.com/file/d/1w42QLT0_AsutI5gMwwb45I6VMudaRpV-/view)**
 
 ---
 
@@ -159,25 +158,57 @@ FitForge follows a **clean, modular architecture**:
 
 ---
 
-## 🗂️ Relational Diagram
-
----
+## 🗂️ [Relational Diagram](https://drive.google.com/file/d/1w42QLT0_AsutI5gMwwb45I6VMudaRpV-/view)
 
 ---
 
 ## 🗃️ Database Schema
 
-```
+- **Models**
 
-```
+- _User_
+
+  - id (PK)
+  - name
+  - email
+  - password
+  - role (enum: ADMIN, TRAINER, TRAINEE)
+  - timestamps
+
+- _Trainer_
+
+  - userId (FK)
+  - schedules (FK -> Schedule) - array of schedule
+
+- _Trainee_
+
+  - userId (FK)
+  - bookings (FK -> Booking) - array of booking
+
+- _Schedule_
+
+  - id (PK)
+  - date
+  - startTime
+  - endTime
+  - trainerId (FK -> User)
+  - capacity
+  - bookings (FK -> Booking) array of booking
+  - timestamps
+
+- _Booking_
+  - id (PK)
+  - scheduleId (FK -> Schedule)
+  - traineeId (FK -> Trainee)
+  - timestamps
 
 ---
 
 ## 📬 API Endpoints
 
-> Base URL: `https://fitforge.com/api`
+> Base URL: `https://fitforge-server-v9rr.onrender.com/api`
 
-- **API Endpoints Documentation**: []()
+- **API Endpoints Documentation**: [https://documenter.getpostman.com/view/22696421/2sB3QDvsQJ](https://documenter.getpostman.com/view/22696421/2sB3QDvsQJ)
 
 ---
 
