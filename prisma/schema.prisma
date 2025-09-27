@@ -7,9 +7,59 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-/**
- * =================== ENUMS ===================
- */
+
+model User {
+  id        String   @id @default(uuid())
+  name      String
+  email     String   @unique
+  password  String
+  role      UserRole
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  trainer   Trainer?
+  trainee   Trainee?
+}
+
+model Trainer {
+  userId    String   @id
+  user      User     @relation(fields: [userId], references: [id])
+  schedules Schedule[]
+}
+
+model Trainee {
+  userId   String   @id
+  user     User     @relation(fields: [userId], references: [id])
+  bookings Booking[]
+}
+
+model Schedule {
+  id        String    @id @default(uuid())
+  date      DateTime
+  startTime DateTime
+  endTime   DateTime
+  trainerId String
+  trainer   Trainer   @relation(fields: [trainerId], references: [userId])
+  capacity  Int       @default(10)
+  bookings  Booking[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  @@index([date, startTime])
+  @@unique([date, trainerId])
+}
+
+model Booking {
+  id         String   @id @default(uuid())
+  scheduleId String
+  traineeId  String
+  createdAt  DateTime @default(now())
+
+  schedule   Schedule @relation(fields: [scheduleId], references: [id])
+  trainee    Trainee     @relation(fields: [traineeId], references: [userId]) 
+
+  @@unique([scheduleId, traineeId])
+}
 
 enum UserRole {
   ADMIN
