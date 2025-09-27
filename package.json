@@ -1,10 +1,10 @@
 {
   "name": "fitforge",
   "version": "1.0.0",
-  "main": "dist/index.js",
+  "main": "src/index.js",
   "license": "MIT",
   "scripts": {
-    "start": "node dist/index.js",
+    "start": "node src/index.ts",
     "dev": "ts-node-dev --respawn --transpile-only ./src/index.ts",
     "build": "tsc",
     "lint": "eslint \"src/**/*.{js,ts}\"",
