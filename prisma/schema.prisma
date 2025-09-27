@@ -24,13 +24,13 @@ model User {
 
 model Trainer {
   userId    String   @id
-  user      User     @relation(fields: [userId], references: [id])
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   schedules Schedule[]
 }
 
 model Trainee {
   userId   String   @id
-  user     User     @relation(fields: [userId], references: [id])
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   bookings Booking[]
 }
 
@@ -56,8 +56,8 @@ model Booking {
   traineeId  String
   createdAt  DateTime @default(now())
 
-  schedule   Schedule @relation(fields: [scheduleId], references: [id])
-  trainee    Trainee     @relation(fields: [traineeId], references: [userId]) 
+  schedule   Schedule @relation(fields: [scheduleId], references: [id], onDelete: Cascade)
+  trainee    Trainee     @relation(fields: [traineeId], references: [userId], onDelete: Cascade) 
 
   @@unique([scheduleId, traineeId])
 }

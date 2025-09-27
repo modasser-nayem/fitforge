@@ -21,7 +21,7 @@ router.put(
 router.put(
   "/trainers/:id",
   authorize("ADMIN"),
-  requestValidate(userValidationSchema.updateTrainer),
+  requestValidate(userValidationSchema.updateProfile),
   userController.updateTrainer,
 );
 

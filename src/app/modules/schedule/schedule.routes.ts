@@ -6,6 +6,20 @@ import { scheduleValidationSchema } from "./schedule.dto";
 
 const router = Router();
 
+// Get assigned schedules
+router.get(
+  "/trainer",
+  authorize("TRAINER"),
+  scheduleController.getTrainerAssignedSchedules,
+);
+
+// List trainees for schedule
+router.get(
+  "/:id/trainees",
+  authorize("TRAINER"),
+  scheduleController.getScheduleTrainees,
+);
+
 // Get schedules
 router.get("/", scheduleController.getSchedules);
 
@@ -30,19 +44,5 @@ router.put(
 
 // Delete Schedule - Admin
 router.delete("/:id", authorize("ADMIN"), scheduleController.deleteSchedule);
-
-// Get assigned schedules
-router.get(
-  "/trainer",
-  authorize("TRAINER"),
-  scheduleController.getTrainerAssignedSchedules,
-);
-
-// view trainees for schedule
-router.get(
-  "/:id/attendees",
-  authorize("TRAINER"),
-  scheduleController.getScheduleTrainees,
-);
 
 export const scheduleRoutes = router;

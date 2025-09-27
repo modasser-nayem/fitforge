@@ -28,7 +28,7 @@ const updateProfile = asyncHandler(async (req, res) => {
 });
 
 const updateTrainer = asyncHandler(async (req, res) => {
-  const result = await userService.updateTrainer({
+  const result = await userService.updateProfile({
     userId: req.params.id,
     data: req.body,
   });
