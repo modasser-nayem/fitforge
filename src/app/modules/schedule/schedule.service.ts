@@ -9,43 +9,65 @@ import { TCreateSchedule, TUpdateSchedule } from "./schedule.interface";
 
 const TWO_HOURS_MS = 2 * 60 * 60 * 1000;
 const MAX_SCHEDULES_PER_DAY = 5;
-const MAX_CAPACITY = 10;
 
 const getSchedules = async (payload: { date?: string }) => {
+  let schedules;
+
+  // if data exist
   if (payload.date) {
     const parsed = parseISOToUTCDate(payload.date);
-    if (!parsed) {
-      throw new AppError(
-        400,
-        "Invalid date format. Provide an ISO date (YYYY-MM-DD).",
-      );
-    }
 
     const start = toUTCDateOnly(parsed);
     const end = endOfUTCDate(parsed);
 
-    const schedules = await prisma.schedule.findMany({
+    schedules = await prisma.schedule.findMany({
       where: {
         startTime: { gte: start, lte: end },
       },
       include: {
         trainer: { include: { user: true } },
-        bookings: { include: { trainee: { include: { user: true } } } },
+        _count: {
+          select: {
+            bookings: true,
+          },
+        },
       },
       orderBy: { startTime: "asc" },
     });
-
-    return schedules;
   } else {
-    const schedules = await prisma.schedule.findMany({
+    schedules = await prisma.schedule.findMany({
       include: {
         trainer: { include: { user: true } },
-        bookings: { include: { trainee: { include: { user: true } } } },
+        _count: {
+          select: {
+            bookings: true,
+          },
+        },
       },
       orderBy: { startTime: "asc" },
     });
-    return schedules;
   }
+
+  const transformedResult = schedules.map((schedule) => {
+    return {
+      startTime: schedule.startTime,
+      capacity: schedule.capacity,
+      id: schedule.id,
+      date: schedule.date,
+      endTime: schedule.endTime,
+      createdAt: schedule.createdAt,
+      updatedAt: schedule.updatedAt,
+      trainer: {
+        id: schedule.trainer.userId,
+        name: schedule.trainer.user.name,
+        email: schedule.trainer.user.email,
+        photo: schedule.trainer.user.photo,
+      },
+      totalBooking: schedule._count.bookings,
+    };
+  });
+
+  return transformedResult;
 };
 
 const getScheduleDetails = async (payload: { scheduleId: string }) => {
@@ -61,7 +83,33 @@ const getScheduleDetails = async (payload: { scheduleId: string }) => {
 
   if (!schedule) throw new AppError(404, "Schedule not found.");
 
-  return schedule;
+  const transformedResult = {
+    id: schedule.id,
+    date: schedule.date,
+    startTime: schedule.startTime,
+    endTime: schedule.endTime,
+    capacity: schedule.capacity,
+    createdAt: schedule.createdAt,
+    updatedAt: schedule.updatedAt,
+    trainer: {
+      id: schedule.trainer.userId,
+      name: schedule.trainer.user.name,
+      email: schedule.trainer.user.email,
+      photo: schedule.trainer.user.photo,
+    },
+    bookings: schedule.bookings.map((book) => ({
+      id: book.id,
+      createdAt: book.createdAt,
+      trainee: {
+        id: book.trainee.user.id,
+        name: book.trainee.user.name,
+        email: book.trainee.user.email,
+        photo: book.trainee.user.photo,
+      },
+    })),
+  };
+
+  return transformedResult;
 };
 
 const createSchedule = async (payload: { data: TCreateSchedule }) => {
@@ -130,7 +178,24 @@ const createSchedule = async (payload: { data: TCreateSchedule }) => {
     return created;
   });
 
-  return result;
+  const transformedResult = {
+    id: result.id,
+    date: result.date,
+    startTime: result.startTime,
+    endTime: result.endTime,
+    trainerId: result.trainerId,
+    capacity: result.capacity,
+    createdAt: result.createdAt,
+    updatedAt: result.updatedAt,
+    trainer: {
+      id: result.trainer.user.id,
+      name: result.trainer.user.name,
+      email: result.trainer.user.email,
+      photo: result.trainer.user.photo,
+    },
+  };
+
+  return transformedResult;
 };
 
 const updateSchedule = async (payload: {
@@ -222,13 +287,34 @@ const updateSchedule = async (payload: {
         capacity: newCapacity,
         date: toUTCDateOnly(newStart),
       },
-      include: { trainer: { include: { user: true } }, bookings: true },
+      include: {
+        trainer: { include: { user: true } },
+        _count: { select: { bookings: true } },
+      },
     });
 
     return s;
   });
 
-  return updated;
+  const transformedResult = {
+    id: updated.id,
+    date: updated.date,
+    startTime: updated.startTime,
+    endTime: updated.endTime,
+    trainerId: updated.trainerId,
+    capacity: updated.capacity,
+    createdAt: updated.createdAt,
+    updatedAt: updated.updatedAt,
+    totalBooking: updated._count.bookings,
+    trainer: {
+      id: updated.trainer.user.id,
+      name: updated.trainer.user.name,
+      email: updated.trainer.user.email,
+      photo: updated.trainer.user.photo,
+    },
+  };
+
+  return transformedResult;
 };
 
 const deleteSchedule = async (payload: { scheduleId: string }) => {
@@ -248,13 +334,24 @@ const getTrainerAssignedSchedules = async (payload: { trainerId: string }) => {
   const schedules = await prisma.schedule.findMany({
     where: { trainerId: payload.trainerId },
     include: {
-      bookings: { include: { trainee: { include: { user: true } } } },
-      trainer: { include: { user: true } },
+      _count: { select: { bookings: true } },
     },
     orderBy: { startTime: "asc" },
   });
 
-  return schedules;
+  const transformedResult = schedules.map((sch) => ({
+    id: sch.id,
+    date: sch.date,
+    startTime: sch.startTime,
+    endTime: sch.endTime,
+    trainerId: sch.trainerId,
+    capacity: sch.capacity,
+    createdAt: sch.createdAt,
+    updatedAt: sch.updatedAt,
+    totalBooking: sch._count.bookings,
+  }));
+
+  return transformedResult;
 };
 
 const getScheduleTrainees = async (payload: { scheduleId: string }) => {
@@ -263,6 +360,9 @@ const getScheduleTrainees = async (payload: { scheduleId: string }) => {
     include: {
       trainee: {
         include: { user: true },
+      },
+      schedule: {
+        select: { id: true, startTime: true, endTime: true, capacity: true },
       },
     },
     orderBy: { createdAt: "asc" },
@@ -276,6 +376,11 @@ const getScheduleTrainees = async (payload: { scheduleId: string }) => {
     email: b.trainee.user.email,
     photo: b.trainee.user.photo,
     bookedAt: b.createdAt,
+    schedule: {
+      id: b.schedule.id,
+      startTime: b.schedule.startTime,
+      endTime: b.schedule.endTime,
+    },
   }));
 
   return trainees;

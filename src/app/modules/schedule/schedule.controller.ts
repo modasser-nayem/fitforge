@@ -70,7 +70,7 @@ const deleteSchedule = asyncHandler(async (req, res) => {
 
 const getTrainerAssignedSchedules = asyncHandler(async (req, res) => {
   const result = await scheduleService.getTrainerAssignedSchedules({
-    trainerId: req.params.id,
+    trainerId: req.user.id,
   });
 
   sendResponse(res, {

@@ -7,7 +7,7 @@ const createBooking = async (payload: {
 }) => {
   const { traineeId, scheduleId } = payload;
 
-  return await prisma.$transaction(async (tx) => {
+  const result = await prisma.$transaction(async (tx) => {
     // Verify schedule exists and is not in the past
     const schedule = await tx.schedule.findUnique({
       where: { id: scheduleId },
@@ -54,6 +54,7 @@ const createBooking = async (payload: {
           schedule: {
             include: {
               trainer: { include: { user: true } },
+              _count: { select: { bookings: true } },
             },
           },
         },
@@ -68,6 +69,26 @@ const createBooking = async (payload: {
       throw err;
     }
   });
+
+  const transformedResult = {
+    id: result.id,
+    bookedAt: result.createdAt,
+    schedule: {
+      id: result.schedule.id,
+      startTime: result.schedule.startTime,
+      endTime: result.schedule.endTime,
+      capacity: result.schedule.capacity,
+      totalBooking: result.schedule._count.bookings,
+    },
+    trainer: {
+      id: result.schedule.trainer.user.id,
+      name: result.schedule.trainer.user.name,
+      email: result.schedule.trainer.user.email,
+      photo: result.schedule.trainer.user.photo,
+    },
+  };
+
+  return transformedResult;
 };
 
 const getBookings = async (payload: { traineeId: string }) => {
@@ -79,13 +100,32 @@ const getBookings = async (payload: { traineeId: string }) => {
       schedule: {
         include: {
           trainer: { include: { user: true } },
+          _count: { select: { bookings: true } },
         },
       },
     },
     orderBy: { createdAt: "desc" },
   });
 
-  return bookings;
+  const transformedResult = bookings.map((book) => ({
+    id: book.id,
+    bookedAt: book.createdAt,
+    schedule: {
+      id: book.schedule.id,
+      startTime: book.schedule.startTime,
+      endTime: book.schedule.endTime,
+      capacity: book.schedule.capacity,
+      totalBooking: book.schedule._count.bookings,
+    },
+    trainer: {
+      id: book.schedule.trainer.user.id,
+      name: book.schedule.trainer.user.name,
+      email: book.schedule.trainer.user.email,
+      photo: book.schedule.trainer.user.photo,
+    },
+  }));
+
+  return transformedResult;
 };
 
 const cancelBooking = async (payload: {

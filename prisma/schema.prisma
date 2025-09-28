@@ -47,7 +47,6 @@ model Schedule {
   updatedAt DateTime  @updatedAt
 
   @@index([date, startTime])
-  @@unique([date, trainerId])
 }
 
 model Booking {
